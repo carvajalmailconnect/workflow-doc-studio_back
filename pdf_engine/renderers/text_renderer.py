@@ -61,8 +61,8 @@ def render_text(
     ts_id = element.get("textStyleId", "ts_default")
     ts = registry.text(ts_id)
 
-    inline_ts = element.get("textStyle", {})
-    para_cfg = element.get("paragraphStyle", {})
+    inline_ts = element.get("textStyle") or {}
+    para_cfg = element.get("paragraphStyle") or {}
 
     padding_top    = mm(safe_float(para_cfg.get("paddingTop"), 2))
     padding_right  = mm(safe_float(para_cfg.get("paddingRight"), 3))
@@ -72,10 +72,17 @@ def render_text(
     alignment_str = para_cfg.get("alignment") or "left"
     vertical_str  = para_cfg.get("verticalAlign") or "top"
 
-    font_name = registry.font_name(ts)
-    font_size = safe_float(inline_ts.get("fontSize"), ts.font_size)
+    # Inline textStyle on the element can override bold/italic/fontFamily
+    _w = str(inline_ts.get("fontWeight", "")).lower()
+    inline_bold   = bool(inline_ts.get("bold", False)) or _w in ("bold", "700", "800", "900")
+    inline_italic = bool(inline_ts.get("italic", False))
+    font_family   = inline_ts.get("fontFamily") or ts.font_family
+    font_name     = registry._fm.resolve(font_family,
+                                         inline_bold   or ts.bold,
+                                         inline_italic or ts.italic)
+    font_size   = safe_float(inline_ts.get("fontSize"),   ts.font_size)
     line_height = safe_float(inline_ts.get("lineHeight"), ts.line_height)
-    color = registry.rl_color(inline_ts.get("color") or ts.color or "#000000")
+    color       = registry.rl_color(inline_ts.get("color") or ts.color or "#000000")
 
     rl_style = RLParagraphStyle(
         name="text_el",

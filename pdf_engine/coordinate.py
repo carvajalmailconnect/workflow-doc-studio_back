@@ -29,7 +29,7 @@ def safe_float(value, default: float) -> float:
         v = value.strip()
         for suffix in ("px", "pt", "em", "rem", "vw", "vh"):
             if v.lower().endswith(suffix):
-                v = v[:-len(suffix)].strip()
+                v = v[: -len(suffix)].strip()
                 break
         try:
             return float(v)

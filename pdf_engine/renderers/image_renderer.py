@@ -31,12 +31,15 @@ def render_image(
     image_path = None
 
     if kind == "asset":
-        asset = ctx.get_asset(source.get("assetId", ""))
+        asset_id = (source.get("assetId") or source.get("id")
+                    or source.get("imageId") or source.get("asset_id") or "")
+        asset = ctx.get_asset(asset_id)
         if asset:
-            asset_source = asset.get("source", {})
-            url = asset_source.get("url", "")
-            # url is like "/images/filename.png" — resolve against base path
-            image_path = os.path.join(assets_base_path, url.lstrip("/"))
+            asset_source = asset.get("source") or {}
+            url = (asset_source.get("url") or asset_source.get("path")
+                   or asset.get("url") or asset.get("path") or asset.get("src") or "")
+            if url:
+                image_path = os.path.join(assets_base_path, url.lstrip("/\\"))
 
     elif kind == "url":
         image_path = source.get("url", "")

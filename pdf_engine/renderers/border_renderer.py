@@ -46,10 +46,10 @@ def draw_border(
         return
 
     if mode == "unified":
-        unified = border.get("unified", {})
+        unified = border.get("unified") or {}
         if not unified.get("enabled", False):
             return
-        color = registry.rl_color(unified.get("color", "#000000"))
+        color = registry.rl_color(unified.get("color") or "#000000")
         width = mm(safe_float(unified.get("width"), 1))
         r = _resolve_radius(border, radius)
         canvas.saveState()
@@ -173,5 +173,9 @@ def _side_line(
 
 def _resolve_radius(border: dict, default: float) -> float:
     radius_cfg = border.get("radius") or {}
+    # If the mode is explicitly "none" or "standard", no rounding regardless of value
+    mode = str(radius_cfg.get("mode", "unified")).lower()
+    if mode in ("none", "standard", "disabled"):
+        return default
     unified = safe_float(radius_cfg.get("unified"), 0)
     return mm(unified) if unified else default
