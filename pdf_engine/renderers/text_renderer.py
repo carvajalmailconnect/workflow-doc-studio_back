@@ -15,7 +15,7 @@ from reportlab.platypus import Paragraph as RLParagraph, Frame, KeepInFrame
 from reportlab.lib.styles import ParagraphStyle as RLParagraphStyle
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
 
-from pdf_engine.coordinate import element_rect, mm
+from pdf_engine.coordinate import element_rect, mm, safe_float
 from pdf_engine.style_registry import StyleRegistry
 from pdf_engine.renderers.border_renderer import draw_border
 
@@ -64,18 +64,18 @@ def render_text(
     inline_ts = element.get("textStyle", {})
     para_cfg = element.get("paragraphStyle", {})
 
-    padding_top    = mm(para_cfg.get("paddingTop", 2))
-    padding_right  = mm(para_cfg.get("paddingRight", 3))
-    padding_bottom = mm(para_cfg.get("paddingBottom", 2))
-    padding_left   = mm(para_cfg.get("paddingLeft", 3))
+    padding_top    = mm(safe_float(para_cfg.get("paddingTop"), 2))
+    padding_right  = mm(safe_float(para_cfg.get("paddingRight"), 3))
+    padding_bottom = mm(safe_float(para_cfg.get("paddingBottom"), 2))
+    padding_left   = mm(safe_float(para_cfg.get("paddingLeft"), 3))
 
-    alignment_str = para_cfg.get("alignment", "left")
-    vertical_str  = para_cfg.get("verticalAlign", "top")
+    alignment_str = para_cfg.get("alignment") or "left"
+    vertical_str  = para_cfg.get("verticalAlign") or "top"
 
     font_name = registry.font_name(ts)
-    font_size = inline_ts.get("fontSize", ts.font_size)
-    line_height = inline_ts.get("lineHeight", ts.line_height)
-    color = registry.rl_color(inline_ts.get("color", ts.color))
+    font_size = safe_float(inline_ts.get("fontSize"), ts.font_size)
+    line_height = safe_float(inline_ts.get("lineHeight"), ts.line_height)
+    color = registry.rl_color(inline_ts.get("color") or ts.color or "#000000")
 
     rl_style = RLParagraphStyle(
         name="text_el",
@@ -85,8 +85,8 @@ def render_text(
         textColor=color,
         alignment=_ALIGN_MAP.get(alignment_str, TA_LEFT),
         wordWrap="CJK",
-        spaceBefore=mm(para_cfg.get("spaceBefore", 0)),
-        spaceAfter=mm(para_cfg.get("spaceAfter", 0)),
+        spaceBefore=mm(safe_float(para_cfg.get("spaceBefore"), 0)),
+        spaceAfter=mm(safe_float(para_cfg.get("spaceAfter"), 0)),
     )
 
     # Apply text transforms

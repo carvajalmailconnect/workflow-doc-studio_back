@@ -131,9 +131,15 @@ def _parse_css(style_attr: str) -> InlineStyle:
             if value in _NAMED_SIZES:
                 result.font_size_override = _NAMED_SIZES[value]
             elif value.endswith("px"):
-                result.font_size_override = float(value[:-2]) * 0.75  # px → pt
+                try:
+                    result.font_size_override = float(value[:-2]) * 0.75  # px → pt
+                except ValueError:
+                    pass
             elif value.endswith("pt"):
-                result.font_size_override = float(value[:-2])
+                try:
+                    result.font_size_override = float(value[:-2])
+                except ValueError:
+                    pass
     return result
 
 

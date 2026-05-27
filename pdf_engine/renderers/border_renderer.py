@@ -12,7 +12,7 @@ All measurements in the border dict are in mm; converted to pt here.
 
 from __future__ import annotations
 from reportlab.pdfgen.canvas import Canvas
-from pdf_engine.coordinate import mm
+from pdf_engine.coordinate import mm, safe_float
 from pdf_engine.style_registry import StyleRegistry
 
 
@@ -50,7 +50,7 @@ def draw_border(
         if not unified.get("enabled", False):
             return
         color = registry.rl_color(unified.get("color", "#000000"))
-        width = mm(unified.get("width", 1))
+        width = mm(safe_float(unified.get("width"), 1))
         r = _resolve_radius(border, radius)
         canvas.saveState()
         canvas.setStrokeColor(color)
@@ -172,6 +172,6 @@ def _side_line(
 
 
 def _resolve_radius(border: dict, default: float) -> float:
-    radius_cfg = border.get("radius", {})
-    unified = radius_cfg.get("unified", 0)
+    radius_cfg = border.get("radius") or {}
+    unified = safe_float(radius_cfg.get("unified"), 0)
     return mm(unified) if unified else default
