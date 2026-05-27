@@ -19,6 +19,7 @@ from reportlab.lib.colors import Color, HexColor
 
 from pdf_engine.normalize import DocumentContext
 from pdf_engine.font_manager import FontManager, _default as _default_fm
+from pdf_engine.coordinate import safe_float
 
 
 # ── Data classes (resolved style objects) ─────────────────────────────────────
@@ -125,14 +126,14 @@ class StyleRegistry:
                 id=ts["id"],
                 font_family=ts.get("fontFamily") or "Helvetica",
                 font_weight=weight,
-                font_size=float(ts.get("fontSize") or 12),
+                font_size=safe_float(ts.get("fontSize"), 12),
                 color=ts.get("color") or "#000000",
-                italic=ts.get("italic", False),
-                bold=(weight == "Bold"),
-                underline=ts.get("underline", False),
-                strikethrough=ts.get("strikethrough", False),
-                letter_spacing=float(ts.get("letterSpacing") or 0),
-                line_height=float(ts.get("lineHeight") or 1.4),
+                italic=bool(ts.get("italic", False)),
+                bold=(weight in ("Bold", "bold", "700", "800", "900")),
+                underline=bool(ts.get("underline", False)),
+                strikethrough=bool(ts.get("strikethrough", False)),
+                letter_spacing=safe_float(ts.get("letterSpacing"), 0),
+                line_height=safe_float(ts.get("lineHeight"), 1.4),
                 superscript=ts.get("superscript", False),
                 subscript=ts.get("subscript", False),
                 superscript_offset=ts.get("superscriptOffset", 33),
@@ -149,12 +150,12 @@ class StyleRegistry:
                 id=ps["id"],
                 alignment=ps.get("alignment", "left"),
                 vertical_align=ps.get("verticalAlign", "top"),
-                line_height=ps.get("lineHeight", 1.4),
-                first_line_indent=ps.get("firstLineIndent", 0),
-                left_indent=ps.get("leftIndent", 0),
-                right_indent=ps.get("rightIndent", 0),
-                space_before=ps.get("spaceBefore", 0),
-                space_after=ps.get("spaceAfter", 0),
+                line_height=safe_float(ps.get("lineHeight"), 1.4),
+                first_line_indent=safe_float(ps.get("firstLineIndent"), 0),
+                left_indent=safe_float(ps.get("leftIndent"), 0),
+                right_indent=safe_float(ps.get("rightIndent"), 0),
+                space_before=safe_float(ps.get("spaceBefore"), 0),
+                space_after=safe_float(ps.get("spaceAfter"), 0),
                 word_wrap=ps.get("wordWrap", True),
                 list_style=ps.get("listStyle", "none"),
                 list_indent=ps.get("listIndent", 5),
@@ -176,18 +177,20 @@ class StyleRegistry:
         for bs in entries:
             self._border[bs["id"]] = ResolvedBorderStyle(
                 id=bs["id"],
-                line_width=bs.get("lineWidth", 1.0),
-                line_color=bs.get("lineColor", "#000000"),
+                line_width=safe_float(bs.get("lineWidth"), 1.0),
+                line_color=bs.get("lineColor") or "#000000",
                 line_style=bs.get("lineStyle", "Solid"),
                 sides=bs.get("sides", {}),
-                radius_x=bs.get("radiusX", 0),
-                radius_y=bs.get("radiusY", 0),
+                radius_x=safe_float(bs.get("radiusX"), 0)
+                    if str(bs.get("corner", "")).lower() not in ("standard", "none", "disabled") else 0,
+                radius_y=safe_float(bs.get("radiusY"), 0)
+                    if str(bs.get("corner", "")).lower() not in ("standard", "none", "disabled") else 0,
                 fill_fill_style_id=bs.get("fillFillStyleId"),
                 line_fill_style_id=bs.get("lineFillStyleId"),
-                margin_top=bs.get("marginTop", 0),
-                margin_right=bs.get("marginRight", 0),
-                margin_bottom=bs.get("marginBottom", 0),
-                margin_left=bs.get("marginLeft", 0),
+                margin_top=safe_float(bs.get("marginTop"), 0),
+                margin_right=safe_float(bs.get("marginRight"), 0),
+                margin_bottom=safe_float(bs.get("marginBottom"), 0),
+                margin_left=safe_float(bs.get("marginLeft"), 0),
             )
 
     # ── Public lookups ─────────────────────────────────────────────────────────
