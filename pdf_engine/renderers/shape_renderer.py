@@ -4,7 +4,7 @@ shape_renderer.py  —  ellipse, rectangle, triangle
 from __future__ import annotations
 import math
 from reportlab.pdfgen.canvas import Canvas
-from pdf_engine.coordinate import element_rect, mm
+from pdf_engine.coordinate import element_rect, mm, safe_float
 from pdf_engine.style_registry import StyleRegistry
 
 
@@ -30,7 +30,7 @@ def render_shape(canvas: Canvas, element: dict, page_h_pt: float, registry: Styl
 def _draw_rectangle(canvas: Canvas, x, y, w, h, border: dict | None) -> None:
     radius = 0
     if border and border.get("radius"):
-        radius = mm(border["radius"].get("unified", 0))
+        radius = mm(safe_float((border.get("radius") or {}).get("unified"), 0))
     if radius > 0:
         canvas.roundRect(x, y, w, h, radius, stroke=1, fill=1)
     else:
@@ -81,8 +81,8 @@ def _apply_border(canvas: Canvas, border: dict | None, registry: StyleRegistry) 
     if mode == "unified":
         unified = border.get("unified", {})
         if unified.get("enabled"):
-            canvas.setStrokeColor(registry.rl_color(unified.get("color", "#000000")))
-            canvas.setLineWidth(mm(unified.get("width", 1)))
+            canvas.setStrokeColor(registry.rl_color(unified.get("color") or "#000000"))
+            canvas.setLineWidth(mm(safe_float(unified.get("width"), 1)))
             return
 
     canvas.setStrokeColorRGB(0, 0, 0, 0)
