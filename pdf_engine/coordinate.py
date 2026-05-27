@@ -12,6 +12,27 @@ All conversions must flip Y: pdf_y = page_height_pt - json_y_pt - element_height
 MM_TO_PT: float = 2.8346456692913385
 
 
+def safe_float(value, default: float) -> float:
+    """Convert a JSON value to float, returning default for None/bool/CSS keywords/unparseable strings."""
+    if value is None:
+        return default
+    if isinstance(value, bool):
+        return default
+    if isinstance(value, (int, float)):
+        return float(value)
+    if isinstance(value, str):
+        v = value.strip()
+        for suffix in ("px", "pt", "em", "rem", "vw", "vh"):
+            if v.lower().endswith(suffix):
+                v = v[: -len(suffix)].strip()
+                break
+        try:
+            return float(v)
+        except ValueError:
+            return default
+    return default
+
+
 def mm(value: float) -> float:
     """Convert millimetres to points."""
     return value * MM_TO_PT
