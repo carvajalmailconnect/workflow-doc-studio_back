@@ -332,11 +332,12 @@ def _resolve_col_widths_ratio(columns: list[dict], total_w_pt: float) -> list[fl
 
 def _default_cell_style(registry: StyleRegistry) -> RLParagraphStyle:
     ts = registry.text("ts_default")
+    font_size_pt = float(ts.font_size or 12)
     return RLParagraphStyle(
         "emb_cell",
         fontName=registry.font_name(ts),
-        fontSize=ts.font_size,
-        leading=ts.font_size * ts.line_height,
+        fontSize=font_size_pt,
+        leading=font_size_pt * float(ts.line_height or 1.4),
     )
 
 
@@ -363,10 +364,10 @@ def _runs_to_rl_xml(
         open_tags: list[str] = []
         close_tags: list[str] = []
 
-        color = ts.color or default_ts.color
+        color = ts.color or default_ts.color or "#000000"
         resolved_ts = registry.text(ts.text_style_id) if ts.text_style_id else default_ts
         font_name = registry.font_name(resolved_ts)
-        font_size = ts.font_size_override or default_ts.font_size
+        font_size = float(ts.font_size_override or default_ts.font_size or 12)
 
         open_tags.append(f'<font name="{font_name}" size="{font_size:.1f}" color="{color}">')
         close_tags.insert(0, "</font>")
@@ -396,12 +397,14 @@ def _make_rl_style(
     if para and para.list_item:
         left_indent = mm(5 * para.list_depth)
 
+    font_size_pt = float(ts.font_size or 12)
+    line_h = float(ts.line_height or 1.4)
     return RLParagraphStyle(
         name="ca_dynamic",
         fontName=registry.font_name(ts),
-        fontSize=ts.font_size,
-        leading=ts.font_size * ts.line_height,
-        textColor=registry.rl_color(ts.color),
+        fontSize=font_size_pt,
+        leading=font_size_pt * line_h,
+        textColor=registry.rl_color(ts.color or "#000000"),
         alignment=TA_LEFT,
         wordWrap="CJK",
         leftIndent=left_indent,
