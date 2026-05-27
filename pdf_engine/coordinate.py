@@ -13,7 +13,12 @@ MM_TO_PT: float = 2.8346456692913385
 
 
 def safe_float(value, default: float) -> float:
-    """Convert a JSON value to float, returning default for None/bool/CSS keywords/unparseable strings."""
+    """
+    Convert value to float safely for use with JSON data from the frontend.
+    Handles: None, int/float, pure numeric strings, strings with CSS unit
+    suffixes (px, pt, em, rem). CSS keywords like "normal" or "auto" and any
+    other non-convertible value return default.
+    """
     if value is None:
         return default
     if isinstance(value, bool):
