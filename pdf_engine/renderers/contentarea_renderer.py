@@ -295,7 +295,7 @@ def _build_embedded_table_flowable(
             cell = next((c for c in cells_data if c.get("colId") == col["id"]), None)
             row.append(cell_flowables(cell))
             if cell:
-                border = cell.get("border", {})
+                border = cell.get("border") or {}
                 if border.get("inline"):
                     sides = border.get("sides", {})
                     for side, cmd in (("top", "LINEABOVE"), ("bottom", "LINEBELOW"),
