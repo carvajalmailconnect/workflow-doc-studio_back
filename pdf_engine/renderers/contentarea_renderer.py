@@ -14,7 +14,7 @@ from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
 from reportlab.platypus import Table, TableStyle
 from reportlab.lib import colors
 
-from pdf_engine.coordinate import element_rect, mm
+from pdf_engine.coordinate import element_rect, mm, safe_float
 from pdf_engine.normalize import DocumentContext
 from pdf_engine.style_registry import StyleRegistry, ResolvedTextStyle
 from pdf_engine.html_parser import parse_content, Paragraph, TextRun, InlineStyle
@@ -302,7 +302,7 @@ def _build_embedded_table_flowable(
                                       ("left", "LINEBEFORE"), ("right", "LINEAFTER")):
                         s = sides.get(side, {})
                         if s.get("enabled"):
-                            w = mm(s.get("lineWidth", 0.25))
+                            w = mm(safe_float(s.get("lineWidth"), 0.25))
                             c = colors.HexColor(s.get("lineColor", "#000000"))
                             style_cmds.append((cmd, (col_idx, row_idx), (col_idx, row_idx), w, c))
         table_data.append(row)
@@ -317,10 +317,10 @@ def _resolve_col_widths_ratio(columns: list[dict], total_w_pt: float) -> list[fl
     widths = []
     for col in columns:
         if "widthRatio" in col:
-            widths.append(total_w_pt * float(col["widthRatio"]))
+            widths.append(total_w_pt * safe_float(col.get("widthRatio"), 0))
         else:
             unit = col.get("widthUnit", "mm")
-            val  = col.get("width", 20)
+            val  = safe_float(col.get("width"), 20)
             widths.append(total_w_pt * val / 100 if unit == "%" else mm(val))
 
     total = sum(widths)

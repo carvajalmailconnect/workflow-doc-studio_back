@@ -20,7 +20,7 @@ from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
 from reportlab.lib import colors
 from reportlab.pdfgen.canvas import Canvas
 
-from pdf_engine.coordinate import element_rect, mm
+from pdf_engine.coordinate import element_rect, mm, safe_float
 from pdf_engine.normalize import DocumentContext
 from pdf_engine.style_registry import StyleRegistry
 from pdf_engine.renderers.border_renderer import draw_border
@@ -185,11 +185,10 @@ def _resolve_col_widths(columns: list[dict], total_w_pt: float) -> list[float]:
     widths = []
     for col in columns:
         if "widthRatio" in col:
-            # Front-end format: widthRatio is a 0-1 proportion of total width
-            widths.append(total_w_pt * float(col["widthRatio"]))
+            widths.append(total_w_pt * safe_float(col.get("widthRatio"), 0))
         else:
             unit = col.get("widthUnit", "mm")
-            val  = col.get("width", 20)
+            val  = safe_float(col.get("width"), 20)
             if unit == "%":
                 widths.append(total_w_pt * val / 100)
             else:
@@ -239,8 +238,8 @@ def _border_style_cmds(
     if tb_mode == "unified":
         u = table_border.get("unified", {})
         if u.get("enabled", True):
-            c = colors.HexColor(u.get("color", "#d1d5db"))
-            w = u.get("width", 1) * 0.5
+            c = colors.HexColor(u.get("color") or "#d1d5db")
+            w = safe_float(u.get("width"), 1) * 0.5
             cmds += [
                 ("BOX", (0, 0), (n_cols-1, n_rows-1), w, c),
             ]
@@ -250,8 +249,8 @@ def _border_style_cmds(
     if cb_mode == "unified":
         u = cell_border.get("unified", {})
         if u.get("enabled", True):
-            c = colors.HexColor(u.get("color", "#e5e7eb"))
-            w = u.get("width", 0.5) * 0.5
+            c = colors.HexColor(u.get("color") or "#e5e7eb")
+            w = safe_float(u.get("width"), 0.5) * 0.5
             cmds += [
                 ("INNERGRID", (0, 0), (n_cols-1, n_rows-1), w, c),
             ]

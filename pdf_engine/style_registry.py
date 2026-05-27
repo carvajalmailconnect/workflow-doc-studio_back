@@ -134,12 +134,12 @@ class StyleRegistry:
                 strikethrough=bool(ts.get("strikethrough", False)),
                 letter_spacing=safe_float(ts.get("letterSpacing"), 0),
                 line_height=safe_float(ts.get("lineHeight"), 1.4),
-                superscript=ts.get("superscript", False),
-                subscript=ts.get("subscript", False),
-                superscript_offset=ts.get("superscriptOffset", 33),
-                subscript_offset=ts.get("subscriptOffset", 33),
-                super_sub_size=ts.get("superSubSize", 58),
-                text_transform=ts.get("textTransform", "none"),
+                superscript=bool(ts.get("superscript", False)),
+                subscript=bool(ts.get("subscript", False)),
+                superscript_offset=safe_float(ts.get("superscriptOffset"), 33),
+                subscript_offset=safe_float(ts.get("subscriptOffset"), 33),
+                super_sub_size=safe_float(ts.get("superSubSize"), 58),
+                text_transform=ts.get("textTransform") or "none",
                 fill_style_id=ts.get("fillStyleId"),
                 border_style_id=ts.get("borderStyleId"),
             )
@@ -148,18 +148,18 @@ class StyleRegistry:
         for ps in entries:
             self._paragraph[ps["id"]] = ResolvedParagraphStyle(
                 id=ps["id"],
-                alignment=ps.get("alignment", "left"),
-                vertical_align=ps.get("verticalAlign", "top"),
+                alignment=ps.get("alignment") or "left",
+                vertical_align=ps.get("verticalAlign") or "top",
                 line_height=safe_float(ps.get("lineHeight"), 1.4),
                 first_line_indent=safe_float(ps.get("firstLineIndent"), 0),
                 left_indent=safe_float(ps.get("leftIndent"), 0),
                 right_indent=safe_float(ps.get("rightIndent"), 0),
                 space_before=safe_float(ps.get("spaceBefore"), 0),
                 space_after=safe_float(ps.get("spaceAfter"), 0),
-                word_wrap=ps.get("wordWrap", True),
-                list_style=ps.get("listStyle", "none"),
-                list_indent=ps.get("listIndent", 5),
-                list_color=ps.get("listColor", ""),
+                word_wrap=bool(ps.get("wordWrap", True)),
+                list_style=ps.get("listStyle") or "none",
+                list_indent=safe_float(ps.get("listIndent"), 5),
+                list_color=ps.get("listColor") or "",
                 default_text_style_id=ps.get("defaultTextStyleId"),
             )
 
@@ -167,9 +167,9 @@ class StyleRegistry:
         for fs in entries:
             self._fill[fs["id"]] = ResolvedFillStyle(
                 id=fs["id"],
-                type=fs.get("type", "solid"),
-                color=fs.get("color", "#ffffff"),
-                opacity=fs.get("opacity", 1.0),
+                type=fs.get("type") or "solid",
+                color=fs.get("color") or "#ffffff",
+                opacity=safe_float(fs.get("opacity"), 1.0),
                 gradient=fs.get("gradient") if fs.get("type") == "gradient" else None,
             )
 
