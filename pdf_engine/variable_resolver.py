@@ -53,7 +53,9 @@ def resolve_var(name: str, data: dict[str, Any], page_vars: dict[str, Any] | Non
     if name in _SPECIAL_VARS:
         return _SPECIAL_VARS[name](data)
 
-    value = _get_nested(data, name)
+    # Strip leading "$" so template vars like "$sim.name" resolve against data["sim"]["name"]
+    lookup_name = name[1:] if name.startswith("$") else name
+    value = _get_nested(data, lookup_name)
     if value is None:
         return ""
     return _to_str(value)
